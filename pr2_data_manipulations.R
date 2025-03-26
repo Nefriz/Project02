@@ -5,7 +5,7 @@ data <- data %>% rename_with(~c("Timestamp",
                                 "University", "Gender", "Age", "University_Name", "Specialty",
                                 "Employment", "Work_Hours", "Study_Hours_Lectures", "Study_Hours_Self",
                                 "Difficulty", "Email", "Study_Level", "Sleep_Hours"
-), everything()) %>% mutate(Uni_type = ifelse(University_Name %in% c("KSE", "УКУ", 'КУК'), "Private", "Public"))
+), everything()) %>% mutate(Uni_type = ifelse(University_Name %in% c("KSE", "УКУ", 'КУК'), "Private", "Public"), total_time = Study_Hours_Lectures + Study_Hours_Self)
 
 data <- data[data$University == 'Так', ]
 data <- data |> select(-(Email))
