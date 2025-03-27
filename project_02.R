@@ -1,5 +1,6 @@
 library(tidyverse)
 library(readr)
+setwd("C:/Users/38093/Downloads")
 data <- read_csv("university.csv")
 data <- data %>% rename_with(~c("Timestamp",
                                 "University", "Gender", "Age", "University_Name", "Specialty",
@@ -42,16 +43,22 @@ data$Work_Hours
 
 colnames(data)
 
+### Clean data and do some manipulation to make life easier
 
 
+### Just interesting the mean to calculate by myself
 data %>% 
   group_by(Uni_type) %>% 
   summarize(mean_study_time = mean(Study_Hours_Self, na.rm=TRUE) + mean(Study_Hours_Lectures, na.rm=TRUE))
 
-# H0 - there is no difference between two groups
-# H1 - there is difference between two groups
+### Set hypothesis for t.test and other metrics
+
+# H0 - there is no difference between different types of universities
+# H1 - there is difference between different types of universities
 # significant level = 0.05
 # I will use t.test, because we do not have much information at all
+# and it's also great for calculating the mean
+
 
 uni_study_time <- data %>% 
   group_by(Uni_type) %>% 
@@ -59,6 +66,15 @@ uni_study_time <- data %>%
 
 t.test(Study_Hours_Self + Study_Hours_Lectures ~ Uni_type, data = data)
 unique(data$Difficulty)
+
+#The whole circle above and the graph show us the average number of hours 
+#that students at private and public universities devote to studying. 
+#Initially, we had to do some manipulations with the sums and so on, 
+#but in general we have the following result: our p-value is less than 0.05, 
+#so we reject the 0 hypothesis, which tells us that there is no strong 
+#difference between the two groups and accept the alternative one. 
+#More naturally, I can say that students at private universities study
+#more than at public universities and this difference is significant
 
 data %>% 
   ggplot(aes(x=Uni_type, y=Study_Hours_Self+Study_Hours_Lectures, fill=Uni_type))+
@@ -80,11 +96,23 @@ data %>%
   )+
   scale_fill_manual(values=c("Private" = "#00bbce", "Public" = "#E4E541"))
 
+#When I was looking for a medium, I realized that the box raft would fit well 
+#here and would be able to show the results of our research in a high-quality 
+#way, so I chose it. In conclusion, it shows us the same thing: 
+#there is a difference and it is quite noticeable, but I find it funny 
+#that an outlier at a state university, I suspect that 
+#it was a medical student who estimated the number of hours to study so much
 
 
-##### 
+#################################################################
 chi <- chisq.test(table(data$Difficulty, data$Uni_type), simulate.p.value = TRUE)
 
+#Here is a simple chi-square to see if there is a difference between 
+#difficulty and university type. It turned out that there is not. 
+#Our p-value is not less than 0.05, so I had no reason to reject the null
+#hypothesis. However, I would like to note that the p-value is not very large, 
+#so I will not say that there is no pattern at all, but the graph shows us 
+#an interesting thing
 
 chi_table <- table(data$Difficulty, data$Uni_type)
 chi_df <- as.data.frame(chi_table)
@@ -105,14 +133,29 @@ chi_df %>%
     text = element_text(color = "#003964", size = 20)
   )
 
+#In our visualization course, we studied the hit map and it was very good 
+#at describing the relationship between complexity and the type of university.
+#As we can see from the graph, it is difficult for everyone to study, 
+#so we don't have a big dependence, but I would like to note that private
+#universities are more difficult
 
 
-
-##### 
+####################################################################
 chi <- chisq.test(table(data$Difficulty, data$Total_Study_Time), simulate.p.value = TRUE)
 chi$observed
 chi$expected
-
+#And since we've already looked at whether the difficulty depends on the type 
+#of university and found that it doesn't really depend much, I decided that
+#it would be cool to see if there is a relationship between difficulty and
+#the number of hours devoted to studying. Spoiler alert: the results 
+#are very strange. 
+#In general, I used the same chi-square because it fits small samples well. 
+#The p-value is again greater than 0.05, so I have no reason to reject 
+#the null hypothesis. So this means that there is actually no difference 
+#between the number of hours and complexity. The graph will show this 
+#very well. 
+#And I'll tell you why. I suspect that it's because complexity is a very 
+#subjective thing and everyone feels it differently, so the sample can be excluded
 
 data$Study_Time <- factor(case_when(
   data$Study_Hours_Lectures+data$Study_Hours_Self<=15 ~ "Low",   
@@ -128,7 +171,8 @@ data$Study_Difficulty_Distribution <- factor(case_when(
   data$Difficulty>7 ~ "High"
 ), levels=c("Low", "Medium", "High"))
 
-
+#To make it easier to visualize, I divided the groups and visualized 
+#according to them. 
 
 
 table_chi <- table(data$Difficulty, data$Study_Time)
@@ -154,6 +198,18 @@ ggplot(mean_diff, aes(x =Total_Study_Time, y = mean_difficulty)) +
     axis.title.x = element_text(margin = margin(t = 15), color ="#003964"),
     text = element_text(color = "#003964", size = 20))
 
+#A few manipulations and we have a linear graph that shows the relationship
+#between the number of hours and complexity. And as we can see,
+#it is not very revealing, because it seems that if a person spends 
+#more time studying, it should not be so difficult, but no, 
+#we have a person who spends 60 hours studying and still finds it difficult,
+#and vice versa. There are people who spend very little time studying and 
+#find it easy.
+#As I said earlier, this is because the difficulty is very subjective and 
+#it depends not even on the type of university, but on the person and 
+#the specialty they are studying
+
+
 
 united_table <- table(data$Study_Difficulty_Distribution, data$Study_Time)
 df <- as.data.frame(united_table)
@@ -173,10 +229,19 @@ df %>%
   scale_x_discrete(labels=c("Low", "Medium", "High"))+
   scale_fill_manual(values=c("Medium"="#00bbce","Low"="#E4E541","High"="#003964"))
 
+#This is an additional chart to the previous x-square. It also shows that
+#there is no correlation between the number of hours and the difficulty, 
+#it just does it through the bar chart 
 
 
 
-
+#What can be the general conclusion from this part? Students of private
+#universities study more than students of state universities, 
+#this does not make their life and studies easier, but it will definitely 
+#tell us about the amount of knowledge they will have after graduation. 
+#I think I can say that according to this, we cannot say that private 
+#universities are worse, but it looks like the opposite, although this 
+#is also very subjective)
 
 
 
