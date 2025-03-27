@@ -1,14 +1,20 @@
 data<- read.csv('C:/Users/Acer/Downloads/Data.csv')
 data
-
+# rename columns
 data <- data %>% rename_with(~c("Timestamp",
                                 "University", "Gender", "Age", "University_Name", "Specialty",
                                 "Employment", "Work_Hours", "Study_Hours_Lectures", "Study_Hours_Self",
                                 "Difficulty", "Email", "Study_Level", "Sleep_Hours"
-), everything()) %>% mutate(Uni_type = ifelse(University_Name %in% c("KSE", "УКУ", 'КУК'), "Private", "Public"), total_time = Study_Hours_Lectures + Study_Hours_Self)
+), everything()) %>% mutate(Uni_type = ifelse(University_Name %in% c("KSE", "УКУ", 'КУК'), "Private", "Public"))
 
+# alter the data (delete data about non-students, change data types, update values which are not numeric, delete personal information of people
+data[data$Study_Hours_Self == "25+"|data$Study_Hours_Lectures == "25+", ] <- "30"
+data$Study_Hours_Lectures <- as.numeric(data$Study_Hours_Lectures)
+data$Study_Hours_Self <- as.numeric(data$Study_Hours_Self)
 data <- data[data$University == 'Так', ]
 data <- data |> select(-(Email))
+
+data <- data |> mutate(Study_Hours_Total = Study_Hours_Lectures + Study_Hours_Self)
 
 # обробка годин роботи(
 data$Work_Hours |> unique()
